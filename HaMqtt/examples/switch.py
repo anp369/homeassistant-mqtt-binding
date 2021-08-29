@@ -46,7 +46,7 @@ try:
 except KeyboardInterrupt:
     pass
 finally:
-    # mark device as offline/unavailable in homeassistant
-    sw.send_offline()
+    # close the device for cleanup. Gets marked as offline/unavailable in homeassistant
+    sw.close()
     client.loop_stop()
     client.disconnect()

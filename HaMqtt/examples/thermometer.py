@@ -31,7 +31,7 @@ try:
 except KeyboardInterrupt:
     pass
 finally:
-    # mark device as offline/unavailable in homeassistant
-    th.send_offline()
+    # close the device for cleanup. Gets marked as offline/unavailable in homeassistant
+    th.close()
     client.loop_stop()
     client.disconnect()
