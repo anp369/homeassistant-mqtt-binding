@@ -1,0 +1,45 @@
+image: python:3.8
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+before_script:
+  - python3 -m pip install virtualenv
+  - python3 -m venv venv
+  - source venv/bin/activate
+  - pip install -r requirements.txt
+  - pip install build twine
+
+
+stages:
+  - test
+  - build
+  - upload
+
+
+test:
+  stage: test
+  script:
+    - python3 -m unittest
+
+build:
+  stage: build
+  script:
+    - python3 -m build
+  artifacts:
+    paths:
+      - dist
+
+upload:
+  stage: upload
+  dependencies:
+    - build
+  script:
+    - twine upload --repository testpypi -u __token__ -p "$CI_PYPI_TOKEN" dist/*
+  only:
+    - /^release_.+/

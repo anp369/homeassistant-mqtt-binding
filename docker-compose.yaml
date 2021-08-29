@@ -1,0 +1,14 @@
+version: "2"
+
+services:
+  ha:
+    container_name: hass
+    image: ghcr.io/home-assistant/home-assistant:stable
+    ports:
+      - 8123:8123
+
+  mqtt:
+    container_name: mosquitto
+    image: eclipse-mosquitto:1.6 # no config required
+    ports:
+      - 1883:1883
