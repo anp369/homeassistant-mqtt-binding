@@ -7,7 +7,7 @@ from random import uniform
 
 from paho.mqtt.client import Client
 
-from HaMqtt.MQTTThermometer import MQTTThermometer
+from src.HaMqtt.MQTTThermometer import MQTTThermometer
 
 # instantiate an paho mqtt client and connect to the mqtt server
 client = Client("testscript")

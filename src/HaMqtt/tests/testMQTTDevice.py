@@ -2,7 +2,7 @@ import json
 import unittest
 import unittest.mock as mock
 
-from HaMqtt.MQTTDevice import MQTTDevice
+from src.HaMqtt.MQTTDevice import MQTTDevice
 
 
 class TestMQTTDevice(unittest.TestCase):

@@ -1,7 +1,7 @@
 from paho.mqtt.client import Client
 
-from HaMqtt.MQTTSensor import MQTTSensor
-from HaMqtt.MQTTUtil import HaDeviceClass
+from .MQTTSensor import MQTTSensor
+from .MQTTUtil import HaDeviceClass
 
 
 class MQTTThermometer(MQTTSensor):

@@ -2,8 +2,8 @@ import uuid
 
 from paho.mqtt.client import Client
 
-from HaMqtt.MQTTDevice import MQTTDevice
-from HaMqtt.MQTTUtil import HaDeviceClass
+from .MQTTDevice import MQTTDevice
+from .MQTTUtil import HaDeviceClass
 
 
 class MQTTSensor(MQTTDevice):

@@ -12,7 +12,7 @@ import time
 
 from paho.mqtt.client import Client
 
-from HaMqtt.MQTTSwitch import MQTTSwitch
+from src.HaMqtt.MQTTSwitch import MQTTSwitch
 
 # instantiate an paho mqtt client and connect to the mqtt server
 client = Client("testscript")

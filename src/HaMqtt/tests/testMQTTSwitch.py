@@ -1,8 +1,8 @@
 import unittest
 import unittest.mock as mock
 
-from HaMqtt import MQTTUtil
-from HaMqtt.MQTTSwitch import MQTTSwitch
+from src.HaMqtt import MQTTUtil
+from src.HaMqtt.MQTTSwitch import MQTTSwitch
 
 
 class TestMQTTSwitch(unittest.TestCase):
