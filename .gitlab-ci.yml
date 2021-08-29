@@ -40,6 +40,6 @@ upload:
   dependencies:
     - build
   script:
-    - twine upload --repository testpypi -u __token__ -p "$CI_PYPI_TOKEN" dist/*
+    - twine upload -u __token__ -p "$CI_PYPI_TOKEN" dist/*
   only:
     - /^release_.+/
