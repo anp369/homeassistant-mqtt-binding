@@ -117,14 +117,14 @@ class MQTTDevice:
         send the available payload on the available channel
         :return:
         """
-        self._client.publish(self.avail_topic, 'online', qos=1)
+        self._client.publish(self.avail_topic, 'online', qos=1, retain=True)
 
     def send_offline(self):
         """
         send the unavailable payload on the available channel
         :return:
         """
-        self._client.publish(self.avail_topic, 'offline', qos=1)
+        self._client.publish(self.avail_topic, 'offline', qos=1, retain=True)
 
     def delete_config(self):
         """

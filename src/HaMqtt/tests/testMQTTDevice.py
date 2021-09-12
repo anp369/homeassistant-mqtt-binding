@@ -28,7 +28,7 @@ class TestMQTTDevice(unittest.TestCase):
         self.assertEqual(dev.conf_dict['unique_id'], unique_id)
         client.subscribe.assert_called_with(dev.state_topic)
         client.publish.assert_any_call(dev.config_topic, json.dumps(dev.conf_dict), retain=True)
-        client.publish.assert_any_call(dev.avail_topic, 'online', qos=1)
+        client.publish.assert_any_call(dev.avail_topic, 'online', qos=1, retain=True)
 
     @mock.patch('paho.mqtt.client.Client')
     def test_deletion(self, mocked_client):
@@ -40,7 +40,7 @@ class TestMQTTDevice(unittest.TestCase):
         topic = dev.avail_topic
         dev.close()
 
-        client.publish.assert_any_call(topic, 'offline', qos=1)
+        client.publish.assert_any_call(topic, 'offline', qos=1, retain=True)
 
     @mock.patch('paho.mqtt.client.Client')
     def test_online(self, mocked_client):
@@ -52,7 +52,7 @@ class TestMQTTDevice(unittest.TestCase):
         topic = dev.state_topic
 
         dev.send_online()
-        client.publish.called_with(topic, 'online', qos=1)
+        client.publish.called_with(topic, 'online', qos=1, retain=True)
 
         dev.send_offline()
-        client.publish.called_with(topic, 'offline', qos=1)
+        client.publish.called_with(topic, 'offline', qos=1, retain=True)
