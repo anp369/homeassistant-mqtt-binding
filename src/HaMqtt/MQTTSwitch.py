@@ -9,7 +9,8 @@ class MQTTSwitch(MQTTDevice.MQTTDevice):
     device_type = "switch"
     initial_state = MQTTUtil.OFF
 
-    def __init__(self, name: str, node_id: str, client: Client, unique_id: str = str(uuid.uuid4())):
+    def __init__(self, name: str, node_id: str, client: Client, unique_id: str = str(uuid.uuid4()),
+                 device_dict: dict = None):
         # internal tracker of the state
         self.state = self.__class__.initial_state
 
@@ -20,7 +21,7 @@ class MQTTSwitch(MQTTDevice.MQTTDevice):
         self.callback_off = lambda: None
         self.cmd_topic = ""
 
-        super().__init__(name, node_id, client, unique_id=unique_id)
+        super().__init__(name, node_id, client, unique_id=unique_id, device_dict=device_dict)
 
     def close(self):
         """

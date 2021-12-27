@@ -29,7 +29,8 @@ class MQTTDevice:
         """
         MQTTDevice.base_topic = topic
 
-    def __init__(self, name: str, node_id: str, client: Client, send_only=False, unique_id=str(uuid.uuid4())):
+    def __init__(self, name: str, node_id: str, client: Client, send_only=False, unique_id=str(uuid.uuid4()),
+                 device_dict=None):
         """
         initializes the mqtt device instance. Make sure to add more configuration in base_classes,
         as this class itself can't be used
@@ -37,8 +38,11 @@ class MQTTDevice:
         :param node_id: node id used for assigning an mqtt topic to the node
         :param client: paho mqtt client instance
         :param send_only: set this to True, if this Device only sends data to the broker, to
-        :param unique_id: unique id to identify this device against homeassistant
         disable all parts that subscribe to topics etc.
+        :param unique_id: unique id to identify this device against homeassistant
+        :param device_dict: dictionary containing device information to group mqtt entities to a device.
+          see https://www.home-assistant.io/integrations/sensor.mqtt/#device for more info
+
         """
         self.name = name
         self.node_id = node_id
@@ -60,6 +64,11 @@ class MQTTDevice:
             'availability_topic': self.avail_topic,
             'unique_id': unique_id
         }
+        if device_dict is not None:
+            assert device_dict.get('connections') or device_dict.get('identifiers'), \
+                "You must set one of identifiers or connections." \
+                " See https://www.home-assistant.io/integrations/sensor.mqtt/#device for more info"
+            self.conf_dict['device'] = device_dict
 
         if not send_only:
             self._client.subscribe(self.state_topic)

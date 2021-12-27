@@ -56,3 +56,17 @@ class TestMQTTDevice(unittest.TestCase):
 
         dev.send_offline()
         client.publish.called_with(topic, 'offline', qos=1, retain=True)
+
+    @mock.patch('paho.mqtt.client.Client')
+    def test_device_mapping(self, mocked_client):
+        client = mocked_client('test')
+        name = "Test Device"
+        identifier = "test"
+
+        device_map = {
+            'identifiers': ["testdevice-001"],
+            'name': 'testdevice'
+        }
+
+        dev = MQTTDevice(name, identifier, client, send_only=False, unique_id='12345678', device_dict=device_map)
+        self.assertTrue(dev.conf_dict['device'] == device_map)
