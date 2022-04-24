@@ -1,3 +1,4 @@
+import threading
 import uuid
 
 from paho.mqtt.client import Client
@@ -81,8 +82,8 @@ class MQTTSwitch(MQTTDevice.MQTTDevice):
         :return:
         """
         if msg.payload == MQTTUtil.ON:
-            self.callback_on()
+            threading.Thread(target=self.callback_on, name="callback_thread").start()
         elif msg.payload == MQTTUtil.OFF:
-            self.callback_off()
+            threading.Thread(target=self.callback_off, name="callback_thread").start()
         else:
             self._logger.warn(f"got invalid payload as command: {msg.payload}")
