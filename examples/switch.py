@@ -12,7 +12,7 @@ import time
 
 from paho.mqtt.client import Client
 
-from src.HaMqtt.MQTTSwitch import MQTTSwitch
+from ha_mqtt.mqtt_switch import MqttSwitch
 
 # instantiate an paho mqtt client and connect to the mqtt server
 client = Client("testscript")
@@ -34,7 +34,7 @@ def off():
 
 
 # instantiate an MQTTSwitch object
-sw = MQTTSwitch("sw2", "sw2", client)
+sw = MqttSwitch("sw2", "sw2", client)
 
 # assign both callbacks
 sw.callback_on = on

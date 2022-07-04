@@ -9,37 +9,60 @@ cache:
     - venv/
 
 before_script:
-  - python3 -m pip install virtualenv
-  - python3 -m venv venv
-  - source venv/bin/activate
-  - pip install -r requirements.txt
-  - pip install build twine
-
+  - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+  - source $HOME/.poetry/env
+  - poetry install
 
 stages:
   - test
   - build
   - upload
 
-
 test:
   stage: test
   script:
-    - python3 -m unittest
+    - poetry run python -m unittest
+
+pylint:
+  stage: test
+  script:
+    - poetry run pylint ha_mqtt
 
 build:
   stage: build
   script:
-    - python3 -m build
+    - poetry build
   artifacts:
     paths:
       - dist
+
+docs:
+  stage: build
+  script:
+    - poetry run sphinx-apidoc ha_mqtt -f -o docs/source/
+    - poetry run sphinx-build -b html -W --keep-going docs/source/ docs/build/html
+  artifacts:
+    paths:
+      - docs/build
+  when: always
 
 upload:
   stage: upload
   dependencies:
     - build
   script:
-    - twine upload -u __token__ -p "$CI_PYPI_TOKEN" dist/*
+    - poetry publish -n -u __token__ -p "$CI_PYPI_TOKEN"
+  only:
+    - /^release_.+/
+
+pages:
+  stage: upload
+  dependencies:
+    - docs
+  script:
+    - echo "Uploading docs"
+  artifacts:
+    paths:
+      - docs/build/html
   only:
     - /^release_.+/

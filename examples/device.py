@@ -1,3 +1,6 @@
+#  Copyright (c) 2022 - Andreas Philipp
+#  This code is published under the MIT license
+
 # (c) Andreas Philipp - 2021
 #  andreas.philipp@anphi.de
 
@@ -12,7 +15,9 @@ import time
 
 from paho.mqtt.client import Client
 
-from src.HaMqtt.MQTTSwitch import MQTTSwitch
+from ha_mqtt.ha_device import HaDevice
+from ha_mqtt.mqtt_device_base import MqttDeviceSettings
+from ha_mqtt.mqtt_switch import MqttSwitch
 
 # instantiate an paho mqtt client and connect to the mqtt server
 client = Client("testscript")
@@ -21,30 +26,25 @@ client.loop_start()
 
 
 # callbacks for the on and off actions
-def on(entity: MQTTSwitch, id: int):
+def on(entity: MqttSwitch, id: int):
     print(f"{id} got switched on")
     # report back as switched on
     entity.set_on()
 
 
-def off(entity: MQTTSwitch, id: int):
+def off(entity: MqttSwitch, id: int):
     print(f"{id} got switched off")
     # report back as switched off
     entity.set_off()
 
 
 # create device info dictionary
-dev = {
-    "identifiers": ["testschalter-00001"],
-    "name": "Testschalter 1",
-    "manufacturer": "Andreas Philipp"
-
-}
+dev = HaDevice("Testdevice", "test123456-veryunique")
 
 # instantiate an MQTTSwitch object
-sw1 = MQTTSwitch("sw1", "sw1", client, "testschalter-sw-01", dev)
-sw2 = MQTTSwitch("sw2", "sw2", client, "testschalter-sw-02", dev)
-sw3 = MQTTSwitch("sw3", "sw3", client, "testschalter-sw-03", dev)
+sw1 = MqttSwitch(MqttDeviceSettings("sw-1", "idofsw1", client, dev))
+sw2 = MqttSwitch(MqttDeviceSettings("sw-2", "idofsw2", client, dev))
+sw3 = MqttSwitch(MqttDeviceSettings("sw-3", "idofsw3", client, dev))
 
 # assign both callbacks
 sw1.callback_on = lambda: on(sw1, 1)

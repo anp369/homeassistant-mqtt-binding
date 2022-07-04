@@ -1,7 +1,45 @@
-[build-system]
-requires = [
-    "setuptools",
-    "wheel",
-    "paho-mqtt~=1.5.1"
+[tool.poetry]
+name = "homeassistant-mqtt-binding"
+version = "2.0.0"
+description = "Bindings to implement arbitrary homeassistant devices in python using mqtt as interface"
+authors = ["Andreas Philipp"]
+license = "MIT"
+readme = "README.md"
+repository = "https://gitlab.com/anphi/homeassistant-mqtt-binding"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Home Automation"
 ]
-build-backend = "setuptools.build_meta"
+packages = [
+    { include = "ha_mqtt" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+paho-mqtt = "~=1.5.1"
+wheel = "^0.37.1"
+sphinx-rtd-theme = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+Sphinx = "4.5.0"
+furo = "2022.4.7"
+myst-parser = "^0.17.2"
+pylint = "^2.13.8"
+
+[tool.pylint.master]
+persistent = "n"
+jobs = 0
+load-plugins = "pylint.extensions.docparams"
+max-line-length = 119
+max-attributes = 20
+max-args = 8
+
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

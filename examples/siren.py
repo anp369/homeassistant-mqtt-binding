@@ -3,7 +3,7 @@ import uuid
 
 from paho.mqtt.client import Client
 
-from src.HaMqtt.MQTTSiren import MQTTSiren
+from ha_mqtt.mqtt_siren import MqttSiren
 
 # instantiate an paho mqtt client and connect to the mqtt server
 client = Client("testscript")
@@ -19,7 +19,7 @@ def alarming():
     siren.set_off()
 
 
-siren = MQTTSiren("Testsirene", "siren-01", client, f"siren-{uuid.uuid4()}")
+siren = MqttSiren("Testsirene", "siren-01", client, f"siren-{uuid.uuid4()}")
 
 siren.callback_on = alarming
 
