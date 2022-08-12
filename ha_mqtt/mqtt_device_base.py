@@ -82,6 +82,11 @@ class MqttDeviceBase:
        see https://www.home-assistant.io/docs/mqtt/discovery/ for more info
     """
 
+    send_initial = False
+    """
+    If set to true, initial state will be sent during discovery
+    """
+
     _initial_state = 0
 
     @classmethod
@@ -128,10 +133,11 @@ class MqttDeviceBase:
 
         if not send_only:
             self._client.subscribe(self.state_topic)
-            self._client.message_callback_add(self.state_topic, self.state_callback)
+            self._client.message_callback_add(
+                self.state_topic, self.state_callback)
 
         self.pre_discovery()
-        self._send_discovery()
+        self._send_discovery(self.send_initial)
         self.post_discovery()
 
     def close(self):
@@ -142,7 +148,8 @@ class MqttDeviceBase:
            call this when closing or destructing your application to do proper cleanup
         """
         self.send_offline()
-        self._client.unsubscribe(f"{self.base_topic}/#")  # unsubscribe from all topics
+        # unsubscribe from all topics
+        self._client.unsubscribe(f"{self.base_topic}/#")
 
     def add_config_option(self, key: str, value: str):
         """
@@ -181,7 +188,12 @@ class MqttDeviceBase:
         :param payload: payload to publish
         :param retain: set to True to send as a retained message
         """
+
+        self._logger.debug("publishing payload '%s' for %s",
+                           payload, self._unique_id)
+
         self._client.publish(self.state_topic, payload, retain=retain)
+        time.sleep(0.01)
 
     def state_callback(self, client: Client, userdata: object, msg: MQTTMessage):
         """
@@ -221,9 +233,13 @@ class MqttDeviceBase:
 
         :param send_initial: determines if the classes' initital state should be sent or not
         """
-        self._client.publish(self.config_topic, json.dumps(self.conf_dict), retain=True)
+        self._client.publish(self.config_topic, json.dumps(
+            self.conf_dict), retain=True)
         time.sleep(0.01)
         self.send_online()
-        self._logger.debug("sending config for %s: %s", self._unique_id, self.conf_dict)
+        self._logger.debug("sending config for %s: %s",
+                           self._unique_id, self.conf_dict)
+
         if send_initial:
-            self.publish_state(self.__class__._initial_state)  # pylint: disable=W0212
+            self.publish_state(
+                self.__class__._initial_state)  # pylint: disable=W0212
