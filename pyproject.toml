@@ -31,6 +31,9 @@ pylint = "^2.13.8"
 wheel = "^0.37"
 
 
+[tool.poetry.group.dev.dependencies]
+beautifulsoup4 = "^4.11.1"
+
 [tool.pylint.master]
 persistent = "n"
 jobs = 0

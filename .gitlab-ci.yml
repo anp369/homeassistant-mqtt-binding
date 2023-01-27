@@ -28,6 +28,12 @@ pylint:
   script:
     - poetry run pylint ha_mqtt
 
+check_device_class:
+  stage: test
+  when: manual
+  script:
+    - poetry run python util/parse_device_classes.py
+
 build:
   stage: build
   script:
