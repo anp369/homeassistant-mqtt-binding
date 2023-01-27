@@ -34,7 +34,7 @@ class HaDeviceClass(Enum):
     - for binary sensors: https://www.home-assistant.io/integrations/binary_sensor/
     """
     # sensors
-    NONE = 'None'
+    NONE = None
     APPARENT_POWER = "apparent_power"
     AIR_QUALITY = "aqi"
     BATTERY = 'battery'
