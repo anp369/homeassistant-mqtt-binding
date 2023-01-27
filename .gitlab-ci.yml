@@ -5,8 +5,11 @@ variables:
 
 workflow:
   rules:
+    - if: $CI_COMMIT_BRANCH
+      when: never
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_REF_PROTECTED
 
 
 cache:
@@ -28,17 +31,23 @@ stages:
 
 test:
   stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   script:
     - poetry run python -m unittest
 
 pylint:
   stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   script:
     - poetry run pylint ha_mqtt
 
 check_device_class:
   stage: test
   when: manual
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   script:
     - poetry run python util/parse_device_classes.py
 
@@ -74,9 +83,11 @@ pages:
   dependencies:
     - docs
   script:
-    - echo "Uploading docs"
+    - mkdir public
+    - cp -R docs/build/html public/
   artifacts:
     paths:
-      - docs/build/html
+      - public
+      - docs/build
   only:
     - /^release_.+/
