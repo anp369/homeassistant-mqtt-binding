@@ -20,15 +20,15 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-paho-mqtt = "~=1.5.1"
+paho-mqtt = "^1.6"
 
 [tool.poetry.dev-dependencies]
 Sphinx = "4.5.0"
 sphinx-rtd-theme = "^1.0.0"
-furo = "2022.4.7"
-myst-parser = "^0.17.2"
-pylint = "^2.13.8"
-wheel = "^0.37"
+furo = "~2022.4.7"
+myst-parser = "^0"
+pylint = "^2"
+wheel = "^0.38"
 
 
 [tool.poetry.group.dev.dependencies]
