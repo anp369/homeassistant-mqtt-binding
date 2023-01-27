@@ -34,8 +34,14 @@ See the [examples](https://gitlab.com/anphi/homeassistant-mqtt-binding/HaMqtt/ex
 Since I don't use all devices I haven't implemented them yet. You can easily implement any missing device:
 
 1. create an empty class subclassing any of the devices (normally you would subclass `MQTTDevice` or `MQTTSensor`).
-2. implement the `initialize()` function. It gets called in the parent constructor right before it sends out the
-   discovery payload to the broker. Use `add_config_option()` to add your own settings to the configuration dictionary.
-3. Implement any callbacks that might be necessary for all devices that can receive data. (commands for switches for
+2. implement the `pre_discovery()` if necessary:  
+   It gets called before sending out the discovery payload to the broker. This is the right place to place custom config
+   options for the config
+   dictionary via `add_config_option()`
+3. implement the `post_discovery()` if necessary:  
+   It gets called right after sending out the discovery payload to the broker. Use it to send initial values to HA, if
+   it is necessary that
+   HA knows about the device beforehand.
+4. Implement any callbacks that might be necessary for all devices that can receive data. (commands for switches for
    example).
-4. If your device needs more topics than state, configuration and set, feel free to implement them
+5. If your device needs more topics than state, configuration and set, feel free to implement them additionally.
