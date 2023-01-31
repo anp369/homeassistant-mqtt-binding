@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 - Andreas Philipp
+#  This code is published under the MIT license
+
 # (c) Andreas Philipp - 2021
 #  andreas.philipp@anphi.de
 
@@ -12,6 +15,7 @@ import time
 
 from paho.mqtt.client import Client
 
+from ha_mqtt.mqtt_device_base import MqttDeviceSettings
 from ha_mqtt.mqtt_switch import MqttSwitch
 
 # instantiate an paho mqtt client and connect to the mqtt server
@@ -34,7 +38,8 @@ def off():
 
 
 # instantiate an MQTTSwitch object
-sw = MqttSwitch("sw2", "sw2", client)
+settings = MqttDeviceSettings("sw1", 'mqtt-sw-1', client)
+sw = MqttSwitch(settings)
 
 # assign both callbacks
 sw.callback_on = on

@@ -1,8 +1,11 @@
+#  Copyright (c) 2023 - Andreas Philipp
+#  This code is published under the MIT license
+
 import time
-import uuid
 
 from paho.mqtt.client import Client
 
+from ha_mqtt.mqtt_device_base import MqttDeviceSettings
 from ha_mqtt.mqtt_siren import MqttSiren
 
 # instantiate an paho mqtt client and connect to the mqtt server
@@ -19,7 +22,8 @@ def alarming():
     siren.set_off()
 
 
-siren = MqttSiren("Testsirene", "siren-01", client, f"siren-{uuid.uuid4()}")
+settings = MqttDeviceSettings("Testsiren", "siren-01", client)
+siren = MqttSiren(settings)
 
 siren.callback_on = alarming
 

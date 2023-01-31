@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 - Andreas Philipp
+#  This code is published under the MIT license
+
 # (c) Andreas Philipp - 2021
 #  andreas.philipp@anphi.de
 
@@ -7,6 +10,7 @@ from random import uniform
 
 from paho.mqtt.client import Client
 
+from ha_mqtt.mqtt_device_base import MqttDeviceSettings
 from ha_mqtt.mqtt_thermometer import MqttThermometer
 
 # instantiate an paho mqtt client and connect to the mqtt server
@@ -18,7 +22,8 @@ client.loop_start()
 
 
 # instantiate an MQTTThermometer object
-th = MqttThermometer("Thermometer 1", "temp1", client, "°C")
+settings = MqttDeviceSettings("Thermometer 1", "temp1", client)
+th = MqttThermometer(settings, unit="°C")
 
 try:
     while True:
