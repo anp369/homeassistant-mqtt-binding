@@ -1,4 +1,5 @@
 # Homeassistant MQTT Binding for python
+[![PyPI version](https://badge.fury.io/py/homeassistant-mqtt-binding.svg)](https://badge.fury.io/py/homeassistant-mqtt-binding)
 
 This package enables you to implement arbitrary devices in python supported in homeassistant. The communication with
 homeassistant is handled by MQTT. For example you could write an simple program running on a raspberry pi controlling an
