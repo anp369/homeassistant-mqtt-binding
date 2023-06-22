@@ -9,11 +9,12 @@ import json
 import logging
 import time
 from dataclasses import dataclass
+from typing import Any, Dict, Optional, Union
 
 from paho.mqtt.client import Client, MQTTMessage
 
-from ha_mqtt.ha_device import HaDevice
-from ha_mqtt.util import EntityCategory
+from .ha_device import HaDevice
+from .util import EntityCategory
 
 
 @dataclass
@@ -26,8 +27,14 @@ class MqttDeviceSettings:
     :param client: paho mqtt client instance
     """
 
-    def __init__(self, name: str, unique_id: str, client: Client, device: HaDevice = None,
-                 entity_type: EntityCategory = EntityCategory.PRIMARY):
+    def __init__(
+        self,
+        name: str,
+        unique_id: str,
+        client: Client,
+        device: Optional[HaDevice] = None,
+        entity_type: EntityCategory = EntityCategory.PRIMARY,
+    ):
         assert isinstance(unique_id, str), "the unique ID must be a string"
         self.device = device
         self.name = name
@@ -116,7 +123,7 @@ class MqttDeviceBase:
         self.config_topic = f"{self.base_topic}/config"
         self.state_topic = f"{self.base_topic}/state"
 
-        self.conf_dict = {
+        self.conf_dict: Dict[str, Any] = {
             'name': self.name,
             'state_topic': self.state_topic,
             'availability_topic': self.avail_topic,
@@ -181,7 +188,11 @@ class MqttDeviceBase:
         Runs synchronously.
         """
 
-    def publish_state(self, payload: object, retain: bool = True):
+    def publish_state(
+        self,
+        payload: Union[str, bytes, bytearray, int, float, None],
+        retain: bool = True,
+    ):
         """
         publishes a payload on the device's state topic
 
@@ -189,8 +200,7 @@ class MqttDeviceBase:
         :param retain: set to True to send as a retained message
         """
 
-        self._logger.debug("publishing payload '%s' for %s",
-                           payload, self._unique_id)
+        self._logger.debug("publishing payload '%s' for %s", payload, self._unique_id)
 
         self._client.publish(self.state_topic, payload, retain=retain)
         time.sleep(0.01)
@@ -227,7 +237,7 @@ class MqttDeviceBase:
         """
         self._client.publish(self.config_topic, "")
 
-    def _send_discovery(self, send_initial=True):
+    def _send_discovery(self, send_initial: bool = True):
         """
         sends discovery package to broker
 

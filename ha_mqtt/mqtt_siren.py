@@ -7,6 +7,8 @@ this module contains code for the mqtt siren
 import json
 import threading
 
+from paho.mqtt.client import Client, MQTTMessage
+
 from . import util
 from .mqtt_switch import MqttSwitch
 
@@ -27,9 +29,10 @@ class MqttSiren(MqttSwitch):
        call `set_off()` in the end of your callback to automatically turn off the siren
        once the sound has been played
     """
+
     device_type = "siren"
 
-    def command_callback(self, client, userdata, msg):
+    def command_callback(self, client: Client, userdata: object, msg: MQTTMessage):
         cmd_dict = json.loads(msg.payload.decode("ascii"))
         cmd_str = cmd_dict.get("state", util.OFF)
         if cmd_str.encode("ascii") == util.ON:

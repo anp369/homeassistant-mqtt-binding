@@ -9,6 +9,7 @@ this module contains the HaDevice class
 #  This code is published under the MIT license
 
 import json
+from typing import Any, Dict, List
 
 
 class HaDevice:
@@ -25,13 +26,13 @@ class HaDevice:
         self._name = name
         self.config = {
             "name": name,
-            "identifiers": [unique_id]
+            "identifiers": [unique_id],
         }
 
     def __str__(self):
         return f"{self._name}: {self.get_json()}"
 
-    def add_config_option(self, key: str, value, override: bool = False):
+    def add_config_option(self, key: str, value: Any, override: bool = False):
         """
         adds an arbitrary item to the device config.
         It must be json serializable (preferred lists, dicts and key/value pairs)
@@ -41,16 +42,18 @@ class HaDevice:
         """
         if self.config.get(key) and not override:
             raise ValueError(
-                "You are trying to override an existing config option. Specify 'override = True' if this was intended")
+                "You are trying to override an existing config option. "
+                "Specify 'override = True' if this was intended"
+            )
         self.config[key] = value
 
     @property
-    def identifiers(self) -> list:
+    def identifiers(self) -> List[str]:
         """
         gets all set identifiers of this device
         :return: list containing the identifiers
         """
-        return self.config.get("identifiers", [])
+        return self.config.get("identifiers", [])  # type: ignore
 
     def append_identifier(self, identifier: str):
         """
@@ -61,7 +64,7 @@ class HaDevice:
         """
         if identifier in self.config["identifiers"]:
             raise ValueError("identifier is already present")
-        self.config["identifiers"].append(identifier)
+        self.config["identifiers"].append(identifier)  # type: ignore
 
     def get_json(self) -> str:
         """
@@ -70,7 +73,7 @@ class HaDevice:
         """
         return json.dumps(self.config)
 
-    def get_dict(self) -> dict:
+    def get_dict(self) -> Dict[str, Any]:
         """
         returns the current configuration dict
         :return: dict containing the config

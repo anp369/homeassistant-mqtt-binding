@@ -28,8 +28,13 @@ class MqttSensor(MqttDeviceBase):
 
     device_type = "sensor"
 
-    def __init__(self, settings: MqttDeviceSettings, unit: str, device_class: HaDeviceClass
-                 , send_only=False):
+    def __init__(
+        self,
+        settings: MqttDeviceSettings,
+        unit: str,
+        device_class: HaDeviceClass,
+        send_only: bool = False,
+    ):
         """
         create sensor instance
         """
