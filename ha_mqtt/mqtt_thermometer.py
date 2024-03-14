@@ -2,11 +2,11 @@
 this module contains all classes for implementing mqtt thermometers
 """
 
-#  Copyright (c) 2022 - Andreas Philipp
+#  Copyright (c) 2024 - Andreas Philipp
 #  This code is published under the MIT license
 
 from .mqtt_sensor import MqttDeviceSettings, MqttSensor
-from .util import HaDeviceClass
+from .util import HaSensorDeviceClass
 
 
 class MqttThermometer(MqttSensor):
@@ -18,4 +18,4 @@ class MqttThermometer(MqttSensor):
     def __init__(
         self, settings: MqttDeviceSettings, unit: str = "°C", send_only: bool = True
     ):
-        super().__init__(settings, unit, HaDeviceClass.TEMPERATURE, send_only)
+        super().__init__(settings, unit, HaSensorDeviceClass.TEMPERATURE, send_only)

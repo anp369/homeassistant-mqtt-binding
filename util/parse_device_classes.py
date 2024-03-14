@@ -1,99 +1,110 @@
-#  Copyright (c) 2023 - Andreas Philipp
+#  Copyright (c) 2024 - Andreas Philipp
 #  This code is published under the MIT license
 
 """
 this file takes all device classes for
-sensors: https://www.home-assistant.io/integrations/sensor/
-
+sensors, binary sensors, buttons, covers, numbers, switches and humidifiers
 and compares them against the values in ha_mqtt.util and prints out values not in it
 """
 import sys
+from enum import Enum
+from typing import Tuple, Set
 
 import requests
-from bs4 import BeautifulSoup
 
-from ha_mqtt.util import HaDeviceClass
+from ha_mqtt.util import (HaBinarySensorDeviceClass, HaSwitchDeviceClass,
+                          HaHumidifierDeviceClass, HaCoverDeviceClass,
+                          HaSensorDeviceClass, HaButtonDeviceClass, HaNumberDeviceClass)
 
-urls = {
-    'binary_sensor': "https://www.home-assistant.io/integrations/binary_sensor/",
-    'sensor': "https://www.home-assistant.io/integrations/sensor/",
-    'button': "https://www.home-assistant.io/integrations/button",
-    'cover': "https://www.home-assistant.io/integrations/cover/",
-    'number': "https://www.home-assistant.io/integrations/number",
-    'switch': "https://www.home-assistant.io/integrations/number",
+configuration = {
+    HaSensorDeviceClass: {
+        'url': "https://raw.githubusercontent.com/home-assistant/core/dev/homeassistant/components/sensor/strings.json"},
+    HaBinarySensorDeviceClass: {
+        'url': "https://raw.githubusercontent.com/home-assistant/core/dev/homeassistant/components/binary_sensor/strings.json"},
+    HaButtonDeviceClass: {
+        'url': "https://raw.githubusercontent.com/home-assistant/core/dev/homeassistant/components/button/strings.json"},
+    HaCoverDeviceClass: {
+        'url': "https://raw.githubusercontent.com/home-assistant/core/dev/homeassistant/components/cover/strings.json"},
+    HaSwitchDeviceClass: {
+        'url': "https://raw.githubusercontent.com/home-assistant/core/dev/homeassistant/components/switch/strings.json"},
+    HaNumberDeviceClass: {
+        'url': "https://raw.githubusercontent.com/home-assistant/core/dev/homeassistant/components/number/strings.json"},
+    HaHumidifierDeviceClass: {
+        'url': "https://raw.githubusercontent.com/home-assistant/core/dev/homeassistant/components/humidifier/strings.json"}
 }
 
 
-def parse_url(url: str) -> set:
-    """
-    fetches the sensor device classes and compares it against the present types
-    :param url: URL to fetch
-    :return:
-    """
+def fetch_items_by_url(url: str) -> Set[str]:
     try:
-        page = requests.get(url).content
-        bs = BeautifulSoup(page, 'html.parser')
-    except requests.exceptions.ConnectionError as ex:
-        print(f"Can't fetch {url} : {ex}")
+        response = requests.get(url)
+        dictionary = response.json()
+
+    except Exception as ex:
+        print(f"Error fetching info for {url}:\n {ex}")
         sys.exit(1)
 
-    list_elements = bs.find('article').find('ul').find_all('strong')
-    known_el = {el.value for el in HaDeviceClass}
-    doc_el = set(el.string for el in list_elements)
-    missing = doc_el - known_el
+    target_set = set()
 
-    # None is special case, since it uses the python type None and not the string 'None'
-    # See #4 and https://github.com/home-assistant/core/pull/85106
-    if 'None' in missing:
-        missing.remove('None')
-
-    return missing
+    for k in dictionary.get('entity_component').keys():
+        if k == '_':
+            target_set.add(None)
+        else:
+            target_set.add(k)
+    return target_set
 
 
-def parse_humidifier() -> set:
+def compare_items(target: Set[str], actual: Enum) -> Tuple[bool, Set[str], Set[str]]:
     """
-    humidifier/dehumidifier doesn't have the normal docs.
-    Check if the following strings are present:
-    'humidifier', 'dehumidifier'
-    :return: missing elements
+    compares both sets and determines missing new items present in the web documentation of HA (target).
+    Also determines items present in the current code (actual) but not on the website anymore.
+    These get classified as deprecated
+    :param target: set from the HA documentation website
+    :param actual: set from the code
+    :return: bool - True if the code set is equal to the documentation set;
+        Set - contains missing items in the code;
+        Set - contains deprecated items in the code;
     """
-    required_el = set()
-    required_el.add('humidifier')
-    required_el.add('dehumidifier')
-    known_el = {el.value for el in HaDeviceClass}
-    missing = required_el - known_el
-    return missing
+    actual = {el.value for el in actual}
+    missing = target - actual  # target \ actual
+    deprecated = actual - target  # actual \ target
+
+    return len(missing) == 0 and len(deprecated) == 0, missing, deprecated
 
 
-def print_results(results: dict):
-    """
-    prints results of comparison of known values and values from docs
-    :param results:
-    :return:
-    """
-    for k, v in results.items():
-        print(f"found {len(v)} missing items in category: {k}")
+def main():
+    code_ok = True  # flag whether all items are in sync with the web docs
+    for enum, config in configuration.items():
+        if url := config.get('url'):
+            target = fetch_items_by_url(url)
+        if items := config.get('items'):
+            target = set(items)
+
+        in_sync, missing, deprecated = compare_items(target, enum)
+        code_ok &= in_sync
+
         print(50 * '=')
+        print(f"{enum}\n")
+        if l := len(missing):
+            print(f"found {l} missing entries:")
+            for item in missing:
+                if item == None:
+                    print(f"NONE = '{item}'")
+                else:
+                    print(f"{item.upper()} = '{item}'")
 
-        for el in sorted(v):
-            el = str(el)
-            print(f"{el.upper()} = {repr(el)}")
+        if l := len(deprecated):
+            print(f"\nfound {l} deprecated entries:")
+            for item in deprecated:
+                print(f"{item}")
+
+        if len(deprecated) == 0 and len(missing) == 0:
+            print("OK!")
+
         print("")
+
+    if not code_ok:
+        sys.exit(1)
 
 
 if __name__ == '__main__':
-    complete = True
-    missing_el = {}
-    for k, v in urls.items():
-        missing_el[k] = parse_url(v)
-        if len(missing_el[k]) > 0:
-            complete = False
-
-    missing_el['humidifier'] = parse_humidifier()
-    if len(missing_el['humidifier']) > 0:
-        complete = False
-
-    print_results(missing_el)
-
-    if not complete:
-        sys.exit(1)
+    main()

@@ -1,7 +1,7 @@
 """
 this module contains all code for MQTT switches
 """
-#  Copyright (c) 2022 - Andreas Philipp
+#  Copyright (c) 2024 - Andreas Philipp
 #  This code is published under the MIT license
 
 import threading
@@ -29,9 +29,11 @@ class MqttSwitch(mqtt_device_base.MqttDeviceBase):
     device_type = "switch"
     initial_state = util.OFF
 
-    def __init__(self, settings: MqttDeviceSettings):
+    def __init__(self, settings: MqttDeviceSettings, device_class: util.HaSwitchDeviceClass):
         # internal tracker of the state
         self.state: bool = self.__class__.initial_state
+
+        self.device_class = device_class
 
         # callback executed when an on command is received via MQTT
         self.callback_on = lambda: None
@@ -48,6 +50,7 @@ class MqttSwitch(mqtt_device_base.MqttDeviceBase):
 
     def pre_discovery(self):
         self.cmd_topic = f"{self.base_topic}/set"
+        self.add_config_option("device_class", self.device_class.value)
         self.add_config_option("command_topic", self.cmd_topic)
         self.add_config_option("payload_off", 'off')
         self.add_config_option("payload_on", 'on')

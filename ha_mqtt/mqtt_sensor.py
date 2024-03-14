@@ -3,11 +3,11 @@ Andreas Philipp - 2022
 <dev@anphi.de>
 """
 
-#  Copyright (c) 2022 - Andreas Philipp
+#  Copyright (c) 2024 - Andreas Philipp
 #  This code is published under the MIT license
 
 from .mqtt_device_base import MqttDeviceBase, MqttDeviceSettings
-from .util import HaDeviceClass
+from .util import HaSensorDeviceClass
 
 
 class MqttSensor(MqttDeviceBase):
@@ -32,7 +32,7 @@ class MqttSensor(MqttDeviceBase):
         self,
         settings: MqttDeviceSettings,
         unit: str,
-        device_class: HaDeviceClass,
+            device_class: HaSensorDeviceClass,
         send_only: bool = False,
     ):
         """

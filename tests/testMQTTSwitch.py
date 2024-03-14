@@ -1,3 +1,6 @@
+#  Copyright (c) 2024 - Andreas Philipp
+#  This code is published under the MIT license
+
 import unittest
 import unittest.mock as mock
 
@@ -16,7 +19,7 @@ class TestMQTTSwitch(unittest.TestCase):
     def test_close(self, mocked_client):
         client = mocked_client('test')
         self.settings.client = client
-        sw = MqttSwitch(self.settings)
+        sw = MqttSwitch(self.settings, util.HaSwitchDeviceClass.SWITCH)
         sw.close()
 
         client.unsubscribe.assert_any_call(sw.cmd_topic)
@@ -28,7 +31,7 @@ class TestMQTTSwitch(unittest.TestCase):
         self.settings.client = client
         callbacks = mock.Mock()
 
-        sw = MqttSwitch(self.settings)
+        sw = MqttSwitch(self.settings, util.HaSwitchDeviceClass.SWITCH)
         sw.callback_on = callbacks.cb_on
         sw.callback_off = callbacks.cb_off
 
