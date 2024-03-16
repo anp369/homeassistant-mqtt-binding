@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 - Andreas Philipp
+#  Copyright (c) 2024 - Andreas Philipp
 #  This code is published under the MIT license
 
 # (c) Andreas Philipp - 2021
@@ -8,13 +8,13 @@
 import time
 from random import uniform
 
-from paho.mqtt.client import Client
+from paho.mqtt.client import Client, CallbackAPIVersion
 
 from ha_mqtt.mqtt_device_base import MqttDeviceSettings
 from ha_mqtt.mqtt_thermometer import MqttThermometer
 
 # instantiate an paho mqtt client and connect to the mqtt server
-client = Client("testscript")
+client = Client(CallbackAPIVersion.VERSION1, "testscript")
 client.connect("localhost", 1883)
 client.loop_start()
 

@@ -22,7 +22,7 @@ before_script:
   - export PATH="/root/.local/bin:$PATH"
   # make dependencies cachable
   - poetry config virtualenvs.in-project true
-  - poetry install
+  - poetry install --with dev
 
 stages:
   - test
