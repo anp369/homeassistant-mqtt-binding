@@ -19,8 +19,11 @@ from ha_mqtt.ha_device import HaDevice
 from ha_mqtt.mqtt_device_base import MqttDeviceSettings
 from ha_mqtt.mqtt_switch import MqttSwitch
 
+will_topic = "connections/conn-02/available"
+
 # instantiate a paho mqtt client and connect to the mqtt server
 client = Client(CallbackAPIVersion.VERSION1, "testscript")
+client.will_set(will_topic, 'offline', retain=True)
 client.connect("localhost", 1883)
 client.loop_start()
 
@@ -42,9 +45,9 @@ def off(entity: MqttSwitch, id: int):
 dev = HaDevice("Testdevice", "test123456-veryunique")
 
 # instantiate an MQTTSwitch object
-sw1 = MqttSwitch(MqttDeviceSettings("sw-1", "idofsw1", client, dev))
-sw2 = MqttSwitch(MqttDeviceSettings("sw-2", "idofsw2", client, dev))
-sw3 = MqttSwitch(MqttDeviceSettings("sw-3", "idofsw3", client, dev))
+sw1 = MqttSwitch(MqttDeviceSettings("sw-1", "idofsw1", client, dev, will_topic=will_topic))
+sw2 = MqttSwitch(MqttDeviceSettings("sw-2", "idofsw2", client, dev, will_topic=will_topic))
+sw3 = MqttSwitch(MqttDeviceSettings("sw-3", "idofsw3", client, dev, will_topic=will_topic))
 
 # assign both callbacks
 sw1.callback_on = lambda: on(sw1, 1)

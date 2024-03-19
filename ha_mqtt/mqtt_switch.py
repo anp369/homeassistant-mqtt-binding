@@ -8,11 +8,12 @@ import threading
 
 from paho.mqtt.client import Client, MQTTMessage
 
-from . import mqtt_device_base, util
-from .mqtt_device_base import MqttDeviceSettings
+from . import util
+from .mqtt_device_base import MqttDeviceSettings, MqttDeviceBase
+from .util import HaSwitchDeviceClass
 
 
-class MqttSwitch(mqtt_device_base.MqttDeviceBase):
+class MqttSwitch(MqttDeviceBase):
     """
     MQTT Switch class.
     Implements a binary switch, that knows the states ON and OFF
@@ -29,7 +30,7 @@ class MqttSwitch(mqtt_device_base.MqttDeviceBase):
     device_type = "switch"
     initial_state = util.OFF
 
-    def __init__(self, settings: MqttDeviceSettings, device_class: util.HaSwitchDeviceClass):
+    def __init__(self, settings: MqttDeviceSettings, device_class: HaSwitchDeviceClass = HaSwitchDeviceClass.SWITCH):
         # internal tracker of the state
         self.state: bool = self.__class__.initial_state
 

@@ -2,7 +2,7 @@
 this module contains the MqttDeviceBase, a baseclass for all other mqtt devices
 """
 
-#  Copyright (c) 2022 - Andreas Philipp
+#  Copyright (c) 2024 - Andreas Philipp
 #  This code is published under the MIT license
 
 import json
@@ -25,15 +25,19 @@ class MqttDeviceSettings:
     :param name: Friendly name of the device to be shown in homeassistant
     :param unique_id: unique id to identify this device against homeassistant
     :param client: paho mqtt client instance
+    :param device: :class:`~ha_mqtt.ha_device.HaDevice`, to group multiple entities together
+    :param entity_type: :class:`~ha_mqtt.util.EntityCategory` Category of the entity
+    :param will_topic: the already set will on the client. Will be passed to HA to check if dev is still online
     """
 
     def __init__(
-        self,
-        name: str,
-        unique_id: str,
-        client: Client,
-        device: Optional[HaDevice] = None,
-        entity_type: EntityCategory = EntityCategory.PRIMARY,
+            self,
+            name: str,
+            unique_id: str,
+            client: Client,
+            device: Optional[HaDevice] = None,
+            entity_type: EntityCategory = EntityCategory.PRIMARY,
+            will_topic: str = ""
     ):
         assert isinstance(unique_id, str), "the unique ID must be a string"
         self.device = device
@@ -41,6 +45,7 @@ class MqttDeviceSettings:
         self.unique_id = unique_id
         self.client = client
         self.entity_type = entity_type
+        self.will_topic = will_topic
 
 
 class MqttDeviceBase:
@@ -115,6 +120,7 @@ class MqttDeviceBase:
         self._client = settings.client
         self._unique_id = settings.unique_id
         self._entity_type = settings.entity_type
+        self._will_topic = settings.will_topic
 
         self._logger = logging.getLogger(self.name)
 
@@ -123,15 +129,29 @@ class MqttDeviceBase:
         self.config_topic = f"{self.base_topic}/config"
         self.state_topic = f"{self.base_topic}/state"
 
-        self.conf_dict: Dict[str, Any] = {
-            'name': self.name,
-            'state_topic': self.state_topic,
-            'availability_topic': self.avail_topic,
-            'unique_id': self._unique_id,
+        self.conf_dict: Dict[str, Any] = {}
 
-        }
+        self.add_config_option('name', self.name)
+        self.add_config_option('state_topic', self.state_topic)
+        self.add_config_option('unique_id', self._unique_id)
+
+        # if a will is supplied, specify both the client will and the
+        # availability topic as availability
+        if self._will_topic:
+            self.add_config_option('availability', [
+                {'topic': self.avail_topic},
+                {'topic': self._will_topic}
+            ])
+            # make sure both topics show online to show the device as online
+            self.add_config_option('availability_mode', 'all')
+        else:
+            self.add_config_option('availability_topic', self.avail_topic)
+
+        # set entity category
         if self._entity_type != EntityCategory.PRIMARY:
             self.conf_dict["entity_category"] = self._entity_type.value
+
+        # set device configuration if specified
         if settings.device is not None:
             assert len(settings.device.identifiers) > 0, \
                 "You must set one of identifiers or connections." \
@@ -140,9 +160,11 @@ class MqttDeviceBase:
 
         if not send_only:
             self._client.subscribe(self.state_topic)
-            self._client.message_callback_add(
-                self.state_topic, self.state_callback)
 
+        self._client.message_callback_add(
+            self.state_topic, self.state_callback)
+
+        # run discovery process
         self.pre_discovery()
         self._send_discovery(self.send_initial)
         self.post_discovery()
@@ -158,18 +180,18 @@ class MqttDeviceBase:
         # unsubscribe from all topics
         self._client.unsubscribe(f"{self.base_topic}/#")
 
-    def add_config_option(self, key: str, value: str):
+    def add_config_option(self, key: str, value: Union[str, dict, list]):
         """
         add parameter to the configuration dictionary sent during discovery.
         Use this in child classes to add any additional configuration necessary for the device to work
 
         .. important::
            call this in the `pre_discovery()` method of child classes.
-           Otherwise the discovery package gets sent out before the paramters could be registered,
+           Otherwise, the discovery package gets sent out before the parameters could be registered,
            leading to a faulty configuration
 
         :param key: key of the option
-        :param value: value of the option
+        :param value: value of the option, must be json serializable
         """
         self.conf_dict[key] = value
 
@@ -189,9 +211,9 @@ class MqttDeviceBase:
         """
 
     def publish_state(
-        self,
-        payload: Union[str, bytes, bytearray, int, float, None],
-        retain: bool = True,
+            self,
+            payload: Union[str, bytes, bytearray, int, float, None],
+            retain: bool = True,
     ):
         """
         publishes a payload on the device's state topic
@@ -249,6 +271,8 @@ class MqttDeviceBase:
         self.send_online()
         self._logger.debug("sending config for %s: %s",
                            self._unique_id, self.conf_dict)
+        if self._will_topic:
+            self._client.publish(self._will_topic, 'online', retain=True)
 
         if send_initial:
             self.publish_state(
