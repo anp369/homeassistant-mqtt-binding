@@ -13,8 +13,8 @@ from paho.mqtt.client import Client, CallbackAPIVersion
 from ha_mqtt.mqtt_device_base import MqttDeviceSettings
 from ha_mqtt.mqtt_thermometer import MqttThermometer
 
-# instantiate an paho mqtt client and connect to the mqtt server
-client = Client(CallbackAPIVersion.VERSION1, "testscript")
+# instantiate a paho mqtt client and connect to the mqtt server
+client = Client(CallbackAPIVersion.VERSION2, "testscript")
 client.connect("localhost", 1883)
 client.loop_start()
 
@@ -26,17 +26,18 @@ settings = MqttDeviceSettings("Thermometer 1", "temp1", client)
 th = MqttThermometer(settings, unit="°C")
 
 try:
+    th.start()
     while True:
         # publish a random "temperature" every 5 seconds
         temp = f"{uniform(-10, 10):2.2f}"
         print(f"publishing temperature: {temp} {th.unit_of_measurement}")
-        th.publish_state(temp)
+        th.update_state(temp)
         time.sleep(5)
 
 except KeyboardInterrupt:
     pass
 finally:
     # close the device for cleanup. Gets marked as offline/unavailable in homeassistant
-    th.close()
+    th.stop()
     client.loop_stop()
     client.disconnect()

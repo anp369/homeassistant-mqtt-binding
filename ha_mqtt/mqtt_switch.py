@@ -56,8 +56,8 @@ class MqttSwitch(MqttDeviceBase):
         self.cmd_topic = f"{self.base_topic}/set"
         self.add_config_option("device_class", self.device_class.value)
         self.add_config_option("command_topic", self.cmd_topic)
-        self.add_config_option("payload_off", str(util.OFF))
-        self.add_config_option("payload_on", str(util.ON))
+        self.add_config_option("payload_off", util.OFF.decode('ascii'))
+        self.add_config_option("payload_on", util.ON.decode('ascii'))
 
         self._client.subscribe(self.cmd_topic)
         self._client.message_callback_add(self.cmd_topic, self.command_callback)

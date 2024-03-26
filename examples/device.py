@@ -22,7 +22,7 @@ from ha_mqtt.mqtt_switch import MqttSwitch
 will_topic = "connections/conn-02/available"
 
 # instantiate a paho mqtt client and connect to the mqtt server
-client = Client(CallbackAPIVersion.VERSION1, "testscript")
+client = Client(CallbackAPIVersion.VERSION2, "testscript")
 client.will_set(will_topic, 'offline', retain=True)
 client.connect("localhost", 1883)
 client.loop_start()
@@ -60,14 +60,18 @@ sw3.callback_on = lambda: on(sw3, 3)
 sw3.callback_off = lambda: off(sw3, 3)
 
 try:
+    # start all devices, runs discovery
+    sw1.start()
+    sw2.start()
+    sw3.start()
     while True:
         time.sleep(0.1)
 except KeyboardInterrupt:
     pass
 finally:
     # close the device for cleanup. Gets marked as offline/unavailable in homeassistant
-    sw1.close()
-    sw2.close()
-    sw3.close()
+    sw1.stop()
+    sw2.stop()
+    sw3.stop()
     client.loop_stop()
     client.disconnect()

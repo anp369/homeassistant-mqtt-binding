@@ -28,29 +28,32 @@ client = Client(CallbackAPIVersion.VERSION2, "testscript")
 client.will_set(will_topic, "offline", retain=True)
 
 
-def init(*args, **kwargs):
-    # callbacks for the on and off actions
-    def on():
-        print("I got switched on")
-        # report back as switched on
-        sw.set_on()
-
-    def off():
-        print("I got switched off")
-        # report back as switched off
-        sw.set_off()
-
-    # instantiate an MQTTSwitch object
-    settings = MqttDeviceSettings("sw1", 'mqtt-sw-1', client, will_topic=will_topic)
-    sw = MqttSwitch(settings, HaSwitchDeviceClass.SWITCH)
-
-    # assign both callbacks
-    sw.callback_on = on
-    sw.callback_off = off
+# callbacks for the on and off actions
+def on():
+    print("I got switched on")
+    # report back as switched on
+    sw.set_on()
 
 
-client.on_connect = init
+def off():
+    print("I got switched off")
+    # report back as switched off
+    sw.set_off()
 
+
+# instantiate an MQTTSwitch object
+settings = MqttDeviceSettings("sw1", 'mqtt-sw-1', client, will_topic=will_topic)
+sw = MqttSwitch(settings, HaSwitchDeviceClass.SWITCH)
+
+# assign both callbacks
+sw.callback_on = on
+sw.callback_off = off
+
+# this time use the on connect callback to initialize the device
+# the methods in the other example files should also work
+# use the lambda to mask of the arguments supplied by the callback
+
+client.on_connect = lambda *args: sw.start()
 client.connect("localhost", 1883)
 client.loop_start()
 
@@ -61,6 +64,7 @@ try:
 except KeyboardInterrupt:
     pass
 finally:
+    sw.stop()
     # close the device for cleanup. Gets marked as offline/unavailable in homeassistant
     client.disconnect()
     client.loop_stop()
