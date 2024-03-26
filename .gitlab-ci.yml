@@ -43,6 +43,13 @@ pylint:
   script:
     - poetry run pylint ha_mqtt
 
+mypy-typing:
+  stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  script:
+    - poetry run mypy ha_mqtt
+
 check_device_class:
   stage: test
   when: manual

@@ -28,17 +28,16 @@ class MqttSensor(MqttDeviceBase):
     device_type = "sensor"
 
     def __init__(
-        self,
-        settings: MqttDeviceSettings,
+            self,
+            settings: MqttDeviceSettings,
             device_class: HaSensorDeviceClass,
             unit_of_measurement: str,
-        send_only: bool = False,
+            send_only: bool = False,
     ):
-
         self.device_class = device_class
         self.unit_of_measurement = unit_of_measurement
         super().__init__(settings, send_only)
 
-    def pre_discovery(self):
+    def pre_discovery(self) -> None:
         self.add_config_option("device_class", self.device_class.value)
         self.add_config_option("unit_of_measurement", self.unit_of_measurement)

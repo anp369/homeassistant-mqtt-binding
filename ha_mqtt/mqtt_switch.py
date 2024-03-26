@@ -6,7 +6,7 @@ this module contains all code for MQTT switches
 
 import threading
 
-from paho.mqtt.client import Client, MQTTMessage
+from paho.mqtt.client import Client, MQTTMessage  # type: ignore
 
 from . import util
 from .mqtt_device_base import MqttDeviceSettings, MqttDeviceBase
@@ -35,7 +35,7 @@ class MqttSwitch(MqttDeviceBase):
 
     def __init__(self, settings: MqttDeviceSettings, device_class: HaSwitchDeviceClass = HaSwitchDeviceClass.SWITCH):
         # internal tracker of the state
-        self.state: bool = self.__class__.initial_state
+        self.state: bool = self.__class__.initial_state != util.OFF
 
         self.device_class = device_class
 
@@ -48,38 +48,38 @@ class MqttSwitch(MqttDeviceBase):
 
         super().__init__(settings)
 
-    def stop(self):
+    def stop(self) -> None:
         self._client.unsubscribe(self.cmd_topic)
         super().stop()
 
-    def pre_discovery(self):
+    def pre_discovery(self) -> None:
         self.cmd_topic = f"{self.base_topic}/set"
         self.add_config_option("device_class", self.device_class.value)
         self.add_config_option("command_topic", self.cmd_topic)
-        self.add_config_option("payload_off", util.OFF)
-        self.add_config_option("payload_on", util.ON)
+        self.add_config_option("payload_off", str(util.OFF))
+        self.add_config_option("payload_on", str(util.ON))
 
         self._client.subscribe(self.cmd_topic)
         self._client.message_callback_add(self.cmd_topic, self.command_callback)
 
-    def post_discovery(self):
+    def post_discovery(self) -> None:
         self.set_off()
 
-    def set_on(self):
+    def set_on(self) -> None:
         """
         report to homeassistant, that the device is in 'on' state
         """
         self.state = True
         self.update_state(util.ON)
 
-    def set_off(self):
+    def set_off(self) -> None:
         """
         report to homeassistant, that the device is in 'off' state
         """
         self.state = False
         self.update_state(util.OFF)
 
-    def set(self, state: bool):
+    def set(self, state: bool) -> None:
         """
         sets the switch to the given state
         :param state: state to set to
@@ -89,7 +89,7 @@ class MqttSwitch(MqttDeviceBase):
         else:
             self.set_off()
 
-    def command_callback(self, client: Client, userdata: object, msg: MQTTMessage):  # pylint: disable=W0613
+    def command_callback(self, client: Client, userdata: object, msg: MQTTMessage) -> None:  # pylint: disable=W0613
         """
         callback that is executed when a message on the *command* channel is received
 

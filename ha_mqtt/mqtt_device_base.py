@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
-from paho.mqtt.client import Client, MQTTMessage
+from paho.mqtt.client import Client, MQTTMessage  # type: ignore
 
 from .ha_device import HaDevice
 from .util import EntityCategory
@@ -102,7 +102,7 @@ class MqttDeviceBase:
     _initial_state = 0
 
     @classmethod
-    def set_basetopic(cls, topic: str):
+    def set_basetopic(cls, topic: str) -> None:
         """
         sets the basetopic for the application to publish all other topics under,
         for example 'homeassistant'. Call this function before instantiating child objects
@@ -166,7 +166,7 @@ class MqttDeviceBase:
         """
         return self._started
 
-    def start(self):
+    def start(self) -> None:
         """
         subscribes to all topics, runs discovery and publishes initial state info
 
@@ -186,7 +186,7 @@ class MqttDeviceBase:
         self._started = True
         self.post_discovery()
 
-    def stop(self):
+    def stop(self) -> None:
         """
         sets itself as offline and unsubscribes from all topic regarding this instance
 
@@ -198,7 +198,7 @@ class MqttDeviceBase:
         # unsubscribe from all topics
         self._client.unsubscribe(f"{self.base_topic}/#")
 
-    def add_config_option(self, key: str, value: Union[str, dict, list]):
+    def add_config_option(self, key: str, value: Union[str, dict, list]) -> None:
         """
         add parameter to the configuration sent during discovery.
         Use this in child classes to add any additional configuration necessary for the device to work
@@ -212,14 +212,14 @@ class MqttDeviceBase:
         """
         self._conf_dict[key] = value
 
-    def remove_config_option(self, key: str):
+    def remove_config_option(self, key: str) -> None:
         """
         removes the given config option from this device
         :param key: option to remove
         """
         self._conf_dict.pop(key)
 
-    def pre_discovery(self):
+    def pre_discovery(self) -> None:
         """
         run additional tasks before sending out the discovery command.
         useful in subclasses that add additional configuration parameters
@@ -227,7 +227,7 @@ class MqttDeviceBase:
         Runs synchronously.
         """
 
-    def post_discovery(self):
+    def post_discovery(self) -> None:
         """
         run additional tasks after sending out the discovery command
         Useful in subclasses to run initialization of internal values
@@ -238,7 +238,7 @@ class MqttDeviceBase:
             self,
             payload: Union[str, bytes, bytearray, int, float, None],
             retain: bool = True,
-    ):
+    ) -> None:
         """
         publishes a payload on the device's state topic,
         updating its state in homeassistant
@@ -252,7 +252,7 @@ class MqttDeviceBase:
         self._client.publish(self.state_topic, payload, retain=retain)
         time.sleep(0.01)
 
-    def state_callback(self, client: Client, userdata: object, msg: MQTTMessage):
+    def state_callback(self, client: Client, userdata: object, msg: MQTTMessage) -> None:
         """
         callback that gets executed when receiving a message on the state topic
         Override this in subclasses to trigger actions when messages are received
@@ -263,28 +263,28 @@ class MqttDeviceBase:
         :param msg: the actual message containing the payload
         """
 
-    def set_online(self):
+    def set_online(self) -> None:
         """
         report this device as online to homeassistant.
         send the available payload on the available channel
         """
         self._client.publish(self.avail_topic, 'online', qos=1, retain=True)
 
-    def set_offline(self):
+    def set_offline(self) -> None:
         """
         report this device as offline to homeasstiant
         send the unavailable payload on the available channel
         """
         self._client.publish(self.avail_topic, 'offline', qos=1, retain=True)
 
-    def delete(self):
+    def delete(self) -> None:
         """
         delete the sensor from homeassistant
         by sending an empty payload to the config topic
         """
         self._client.publish(self.config_topic, "")
 
-    def _send_discovery(self, send_initial: bool = True):
+    def _send_discovery(self, send_initial: bool = True) -> None:
         """
         sends discovery package to broker
 

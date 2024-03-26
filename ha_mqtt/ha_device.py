@@ -5,7 +5,7 @@ Andreas Philipp - 2022
 this module contains the HaDevice class
 """
 
-#  Copyright (c) 2022 - Andreas Philipp
+#  Copyright (c) 2024 - Andreas Philipp
 #  This code is published under the MIT license
 
 import json
@@ -29,10 +29,10 @@ class HaDevice:
             "identifiers": [unique_id],
         }
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self._name}: {self.get_json()}"
 
-    def add_config_option(self, key: str, value: Any, override: bool = False):
+    def add_config_option(self, key: str, value: Any, override: bool = False) -> None:
         """
         adds an arbitrary item to the device config.
         It must be json serializable (preferred lists, dicts and key/value pairs)
@@ -55,7 +55,7 @@ class HaDevice:
         """
         return self.config.get("identifiers", [])  # type: ignore
 
-    def append_identifier(self, identifier: str):
+    def append_identifier(self, identifier: str) -> None:
         """
         appends a new identifier to the identifier list
         Make sur eto only use unique identifiers

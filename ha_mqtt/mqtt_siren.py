@@ -7,7 +7,7 @@ this module contains code for the mqtt siren
 import json
 import threading
 
-from paho.mqtt.client import Client, MQTTMessage
+from paho.mqtt.client import Client, MQTTMessage  # type: ignore
 
 from . import util
 from .mqtt_switch import MqttSwitch
@@ -32,11 +32,11 @@ class MqttSiren(MqttSwitch):
 
     device_type = "siren"
 
-    def pre_discovery(self):
+    def pre_discovery(self) -> None:
         super().pre_discovery()
         self.remove_config_option('device_class')  # siren doesn't have a device class
 
-    def command_callback(self, client: Client, userdata: object, msg: MQTTMessage):
+    def command_callback(self, client: Client, userdata: object, msg: MQTTMessage) -> None:
         cmd_dict = json.loads(msg.payload.decode("ascii"))
         cmd_str = cmd_dict.get("state", util.OFF)
         if cmd_str.encode("ascii") == util.ON:
