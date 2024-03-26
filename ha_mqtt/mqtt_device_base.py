@@ -123,13 +123,14 @@ class MqttDeviceBase:
         self._will_topic = settings.will_topic
 
         self._logger = logging.getLogger(self.name)
+        self._started = False
 
         self.base_topic = f"{self.__class__.base_topic}/{self.__class__.device_type}/{self._unique_id}"
         self.avail_topic = f"{self.base_topic}/available"
         self.config_topic = f"{self.base_topic}/config"
         self.state_topic = f"{self.base_topic}/state"
 
-        self.conf_dict: Dict[str, Any] = {}
+        self._conf_dict: Dict[str, Any] = {}
 
         self.add_config_option('name', self.name)
         self.add_config_option('state_topic', self.state_topic)
@@ -149,16 +150,31 @@ class MqttDeviceBase:
 
         # set entity category
         if self._entity_type != EntityCategory.PRIMARY:
-            self.conf_dict["entity_category"] = self._entity_type.value
+            self._conf_dict["entity_category"] = self._entity_type.value
 
         # set device configuration if specified
         if settings.device is not None:
             assert len(settings.device.identifiers) > 0, \
                 "You must set one of identifiers or connections." \
                 " See https://www.home-assistant.io/integrations/sensor.mqtt/#device for more info"
-            self.conf_dict['device'] = settings.device.get_dict()
+            self._conf_dict['device'] = settings.device.get_dict()
 
-        if not send_only:
+    @property
+    def is_started(self) -> bool:
+        """
+        :return: True, if the device has started and communication with the broker is done
+        """
+        return self._started
+
+    def start(self):
+        """
+        subscribes to all topics, runs discovery and publishes initial state info
+
+        .. note::
+           run this after connecting to the broker
+
+        """
+        if not self.send_only:
             self._client.subscribe(self.state_topic)
 
         self._client.message_callback_add(
@@ -167,33 +183,41 @@ class MqttDeviceBase:
         # run discovery process
         self.pre_discovery()
         self._send_discovery(self.send_initial)
+        self._started = True
         self.post_discovery()
 
-    def close(self):
+    def stop(self):
         """
         sets itself as offline and unsubscribes from all topic regarding this instance
 
         .. attention::
            call this when closing or destructing your application to do proper cleanup
         """
-        self.send_offline()
+        self._started = False
+        self.set_offline()
         # unsubscribe from all topics
         self._client.unsubscribe(f"{self.base_topic}/#")
 
     def add_config_option(self, key: str, value: Union[str, dict, list]):
         """
-        add parameter to the configuration dictionary sent during discovery.
+        add parameter to the configuration sent during discovery.
         Use this in child classes to add any additional configuration necessary for the device to work
+        :param key: str - key of the option
+        :param value: value of the option, must be json serializable
 
         .. important::
            call this in the `pre_discovery()` method of child classes.
            Otherwise, the discovery package gets sent out before the parameters could be registered,
            leading to a faulty configuration
-
-        :param key: key of the option
-        :param value: value of the option, must be json serializable
         """
-        self.conf_dict[key] = value
+        self._conf_dict[key] = value
+
+    def remove_config_option(self, key: str):
+        """
+        removes the given config option from this device
+        :param key: option to remove
+        """
+        self._conf_dict.pop(key)
 
     def pre_discovery(self):
         """
@@ -210,13 +234,14 @@ class MqttDeviceBase:
         Runs synchronously.
         """
 
-    def publish_state(
+    def update_state(
             self,
             payload: Union[str, bytes, bytearray, int, float, None],
             retain: bool = True,
     ):
         """
-        publishes a payload on the device's state topic
+        publishes a payload on the device's state topic,
+        updating its state in homeassistant
 
         :param payload: payload to publish
         :param retain: set to True to send as a retained message
@@ -238,24 +263,24 @@ class MqttDeviceBase:
         :param msg: the actual message containing the payload
         """
 
-    def send_online(self):
+    def set_online(self):
         """
         report this device as online to homeassistant.
         send the available payload on the available channel
         """
         self._client.publish(self.avail_topic, 'online', qos=1, retain=True)
 
-    def send_offline(self):
+    def set_offline(self):
         """
         report this device as offline to homeasstiant
         send the unavailable payload on the available channel
         """
         self._client.publish(self.avail_topic, 'offline', qos=1, retain=True)
 
-    def delete_config(self):
+    def delete(self):
         """
-        delete the sensor from homeassistant,
-        sends an empty payload to the config topic
+        delete the sensor from homeassistant
+        by sending an empty payload to the config topic
         """
         self._client.publish(self.config_topic, "")
 
@@ -266,14 +291,14 @@ class MqttDeviceBase:
         :param send_initial: determines if the classes' initital state should be sent or not
         """
         self._client.publish(self.config_topic, json.dumps(
-            self.conf_dict), retain=True)
+            self._conf_dict), retain=True)
         time.sleep(0.01)
-        self.send_online()
+        self.set_online()
         self._logger.debug("sending config for %s: %s",
-                           self._unique_id, self.conf_dict)
+                           self._unique_id, self._conf_dict)
         if self._will_topic:
             self._client.publish(self._will_topic, 'online', retain=True)
 
         if send_initial:
-            self.publish_state(
+            self.update_state(
                 self.__class__._initial_state)  # pylint: disable=W0212

@@ -18,4 +18,4 @@ class MqttThermometer(MqttSensor):
     def __init__(
         self, settings: MqttDeviceSettings, unit: str = "°C", send_only: bool = True
     ):
-        super().__init__(settings, unit, HaSensorDeviceClass.TEMPERATURE, send_only)
+        super().__init__(settings, HaSensorDeviceClass.TEMPERATURE, unit, send_only)

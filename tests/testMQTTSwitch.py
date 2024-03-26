@@ -20,7 +20,7 @@ class TestMQTTSwitch(unittest.TestCase):
         client = mocked_client('test')
         self.settings.client = client
         sw = MqttSwitch(self.settings, util.HaSwitchDeviceClass.SWITCH)
-        sw.close()
+        sw.stop()
 
         client.unsubscribe.assert_any_call(sw.cmd_topic)
 

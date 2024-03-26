@@ -1,7 +1,7 @@
 """
 this module contains code for the mqtt siren
 """
-#  Copyright (c) 2022 - Andreas Philipp
+#  Copyright (c) 2024 - Andreas Philipp
 #  This code is published under the MIT license
 
 import json
@@ -31,6 +31,10 @@ class MqttSiren(MqttSwitch):
     """
 
     device_type = "siren"
+
+    def pre_discovery(self):
+        super().pre_discovery()
+        self.remove_config_option('device_class')  # siren doesn't have a device class
 
     def command_callback(self, client: Client, userdata: object, msg: MQTTMessage):
         cmd_dict = json.loads(msg.payload.decode("ascii"))

@@ -18,6 +18,9 @@ class MqttSwitch(MqttDeviceBase):
     MQTT Switch class.
     Implements a binary switch, that knows the states ON and OFF
 
+    :param settings: As in :class:`~ha_mqtt.mqtt_device_base.MqttDeviceBase`
+    :param device_class: device class of this switch
+
     Usage:
     assign custom functions to the `callback_on` and `callback_off` members.
     These functions get executed in a separate thread once the according payload was received
@@ -45,16 +48,16 @@ class MqttSwitch(MqttDeviceBase):
 
         super().__init__(settings)
 
-    def close(self):
+    def stop(self):
         self._client.unsubscribe(self.cmd_topic)
-        super().close()
+        super().stop()
 
     def pre_discovery(self):
         self.cmd_topic = f"{self.base_topic}/set"
         self.add_config_option("device_class", self.device_class.value)
         self.add_config_option("command_topic", self.cmd_topic)
-        self.add_config_option("payload_off", 'off')
-        self.add_config_option("payload_on", 'on')
+        self.add_config_option("payload_off", util.OFF)
+        self.add_config_option("payload_on", util.ON)
 
         self._client.subscribe(self.cmd_topic)
         self._client.message_callback_add(self.cmd_topic, self.command_callback)
@@ -67,14 +70,14 @@ class MqttSwitch(MqttDeviceBase):
         report to homeassistant, that the device is in 'on' state
         """
         self.state = True
-        self.publish_state(util.ON)
+        self.update_state(util.ON)
 
     def set_off(self):
         """
         report to homeassistant, that the device is in 'off' state
         """
         self.state = False
-        self.publish_state(util.OFF)
+        self.update_state(util.OFF)
 
     def set(self, state: bool):
         """
